@@ -1,0 +1,17 @@
+input.sort-order-input {
+    -webkit-appearance: textfield;
+    -moz-appearance: textfield;
+    appearance: textfield;
+    width: 3em;
+}
+
+.sort-order-input--buttons {
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.sort-order-input--buttons a {
+    display: inline-block;
+    padding: 6px 2px;
+    margin: 0;
+}
