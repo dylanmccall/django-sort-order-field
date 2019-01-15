@@ -48,8 +48,6 @@ django.jQuery(function($) {
         var sortRowsAroundTarget = function($allRows, targetRowId, targetSort) {
             var firstRowWithValue = getFirstRowWithValue($allRows, targetSort);
 
-            console.log("FIRST ROW WITH VALUE", firstRowWithValue, targetRowId);
-
             var changeDirection = (firstRowWithValue === targetRowId) ? 1 : -1;
 
             $allRows.sort(function(rowA, rowB) {
@@ -91,11 +89,9 @@ django.jQuery(function($) {
                 .filter(function(index, row) {
                     var $input = $('.sort-order-input', row);
                     var rowSortValue = Number($input.val());
-                    console.log("FILTER", rowSortValue, searchSortValue, rowSortValue === searchSortValue)
                     return rowSortValue === searchSortValue;
                 })
                 .map(function(index, row) {
-                    console.log("MAP", $(row).attr('id'));
                     return $(row).attr('id');
                 })
                 .first()[0];
