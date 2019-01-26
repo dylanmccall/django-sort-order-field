@@ -2,42 +2,66 @@ django.jQuery(function($) {
     var SORT_DIRECTION_UP = -1;
     var SORT_DIRECTION_DOWN = 1;
 
-    function SortableFormset(formsetElem) {
-        var sortableFormset = this;
+    var UP_ARROW = 38;
+    var DOWN_ARROW = 40;
 
-        var getAllRows = function() {
-            return $(sortableFormset.rowSelector).not('.empty-form');
+    function SortableFormset(formsetElem) {
+        this.$formsetElem = undefined;
+        this.prefix = undefined;
+        this.rowSelector = undefined;
+        this.initialSortOrderByIndex = [];
+
+        this.getAllRows = function() {
+            return $(this.rowSelector).not('.empty-form');
         };
 
-        this.updateRows = function() {
-            var $allRows = getAllRows();
-            updateSortOrderValuesByPosition($allRows);
+        this.updateRows = function(initial) {
+            var $allRows = this.getAllRows();
+
+            if (initial === true) {
+                var lastValue = 0;
+                this.initialSortOrderByIndex = $allRows.map(function(index, row) {
+                    var $rowInput = $('.sort-order-input', row);
+                    var rowValue = Number($rowInput.val());
+                    if (rowValue <= lastValue) {
+                        rowValue = lastValue + 1;
+                    }
+                    lastValue = rowValue;
+                    return rowValue;
+                }).toArray();
+            }
+
+            this.updateSortOrderValuesByPosition($allRows);
         };
 
         this.getRowIdForInputElem = function(inputElem) {
             var $inputElem = $(inputElem);
-            var $allRows = getAllRows();
+            var $allRows = this.getAllRows();
             var $widgetRow = $inputElem.closest($allRows);
             return $widgetRow.attr('id');
         };
 
         this.updateSortOrderOnRow = function(rowId, direction) {
-            var $allRows = getAllRows();
+            var $allRows = this.getAllRows();
             var $rowElem = $allRows.filter('#'+rowId);
             var $targetInput = $('.sort-order-input', $rowElem);
-            var targetSort = Number($targetInput.val());
+            var rowIndex = $allRows.index($rowElem);
+
+            var targetSort = undefined;
 
             if (direction !== undefined) {
-                targetSort += direction;
+                targetSort = this.getSortOrderByIndex(rowIndex + direction);
                 $targetInput.val(targetSort);
+            } else {
+                targetSort = Number($targetInput.val());
             }
 
             var $placeholder = $('<div>')
                 .css('display', 'none')
                 .insertBefore($allRows.first());
 
-            sortRowsAroundTarget($allRows, rowId, targetSort);
-            updateSortOrderValuesByPosition($allRows);
+            this.sortRowsAroundTarget($allRows, rowId, targetSort);
+            this.updateSortOrderValuesByPosition($allRows);
 
             $allRows.detach().insertAfter($placeholder);
             $placeholder.remove();
@@ -45,8 +69,8 @@ django.jQuery(function($) {
             $targetInput.focus();
         };
 
-        var sortRowsAroundTarget = function($allRows, targetRowId, targetSort) {
-            var firstRowWithValue = getFirstRowWithValue($allRows, targetSort);
+        this.sortRowsAroundTarget = function($allRows, targetRowId, targetSort) {
+            var firstRowWithValue = this.getFirstRowWithValue($allRows, targetSort);
 
             var changeDirection = (firstRowWithValue === targetRowId) ? 1 : -1;
 
@@ -69,11 +93,13 @@ django.jQuery(function($) {
             });
         };
 
-        var updateSortOrderValuesByPosition = function($allRows) {
+        this.updateSortOrderValuesByPosition = function($allRows) {
+            var _this = this;
             $.each($allRows, function(index, row) {
                 var $row = $(row);
                 var $input = $('.sort-order-input', row);
-                $input.val(index + 1);
+                var sortOrder = _this.getSortOrderByIndex(index);
+                $input.val(sortOrder);
                 if (index % 2 == 0) {
                     $row.addClass('row1');
                     $row.removeClass('row2');
@@ -84,7 +110,20 @@ django.jQuery(function($) {
             });
         };
 
-        var getFirstRowWithValue = function($allRows, searchSortValue) {
+        this.getSortOrderByIndex = function(index) {
+            index = Math.max(0, index);
+
+            var sortOrder = this.initialSortOrderByIndex[index];
+            if (sortOrder === undefined) {
+                var lastSortOrder = this.initialSortOrderByIndex[this.initialSortOrderByIndex.length - 1] || 0;
+                var offsetFromEnd = index - this.initialSortOrderByIndex.length + 1;
+                return lastSortOrder + offsetFromEnd;
+            } else {
+                return sortOrder;
+            }
+        };
+
+        this.getFirstRowWithValue = function($allRows, searchSortValue) {
             return $allRows
                 .filter(function(index, row) {
                     var $input = $('.sort-order-input', row);
@@ -97,7 +136,7 @@ django.jQuery(function($) {
                 .first()[0];
         };
 
-        var getFormsetOptions = function(formsetData) {
+        this.getFormsetOptions = function(formsetData) {
             if (formsetData && formsetData.options) {
                 return formsetData.options;
             } else {
@@ -105,18 +144,18 @@ django.jQuery(function($) {
             }
         };
 
-        var init = function() {
-            sortableFormset.$formsetElem = $(formsetElem);
+        this._initSortableFormset = function() {
+            this.$formsetElem = $(formsetElem);
 
-            var formsetData = sortableFormset.$formsetElem.data('inline-formset');
-            var options = getFormsetOptions(formsetData);
-            sortableFormset.prefix = options.prefix;
-            sortableFormset.rowSelector = '.dynamic-'+sortableFormset.prefix, sortableFormset.$formsetElem;
+            var formsetData = this.$formsetElem.data('inline-formset');
+            var options = this.getFormsetOptions(formsetData);
+            this.prefix = options.prefix;
+            this.rowSelector = '.dynamic-'+this.prefix, this.$formsetElem;
 
-            sortableFormset.updateRows();
+            this.updateRows(true);
         };
-        init();
-    }
+        this._initSortableFormset();
+    };
 
     var getSortableFormsetForFormsetElem = function(formsetElem) {
         var $formsetElem = $(formsetElem);
@@ -148,22 +187,32 @@ django.jQuery(function($) {
         }
     });
 
-    $(document).on('click', '.sort-order-input--move-up', function(event) {
-        event.preventDefault();
-        var formset = getSortableFormsetForInputElem(this);
+    var sortRowForInput = function(elem, direction) {
+        var formset = getSortableFormsetForInputElem(elem);
         if (formset) {
-            var rowId = formset.getRowIdForInputElem(this);
-            formset.updateSortOrderOnRow(rowId, SORT_DIRECTION_UP);
+            var rowId = formset.getRowIdForInputElem(elem);
+            formset.updateSortOrderOnRow(rowId, direction);
+        }
+    }
+
+    $(document).on('keydown', '.sort-order-input', function(event) {
+        if (event.which === UP_ARROW) {
+            sortRowForInput(this, SORT_DIRECTION_UP);
+            event.preventDefault();
+        } else if (event.which === DOWN_ARROW) {
+            sortRowForInput(this, SORT_DIRECTION_DOWN);
+            event.preventDefault();
         }
     });
 
-    $(document).on('click', '.sort-order-input--move-down', function(event) {
+    $(document).on('click', '.sort-order-input--move-up', function(event) {
+        sortRowForInput(this, SORT_DIRECTION_UP);
         event.preventDefault();
-        var formset = getSortableFormsetForInputElem(this);
-        if (formset) {
-            var rowId = formset.getRowIdForInputElem(this);
-            formset.updateSortOrderOnRow(rowId, SORT_DIRECTION_DOWN);
-        }
+    });
+
+    $(document).on('click', '.sort-order-input--move-down', function(event) {
+        sortRowForInput(this, SORT_DIRECTION_DOWN);
+        event.preventDefault();
     });
 
     $(document).on('formset:added', function(event, $row, formsetName) {
