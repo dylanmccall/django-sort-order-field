@@ -2,7 +2,7 @@ import os
 from setuptools import find_packages, setup
 
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
-    README = readme.read()
+    README_RST = readme.read()
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
@@ -14,8 +14,9 @@ setup(
     include_package_data=True,
     license='BSD License',
     description='A Django model field for controlling sort order.',
-    long_description=README,
-    url='https://www.dylanmc.ca//-',
+    long_description=README_RST,
+    long_description_content_type='text/x-rst',
+    url='https://github.com/dylanmccall/django-sort-order-field',
     author='Dylan McCall',
     author_email='dylan@dylanmccall.com',
     classifiers=[
@@ -31,4 +32,5 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
+    keywords='django sort field',
 )

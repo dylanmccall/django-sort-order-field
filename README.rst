@@ -1,6 +1,6 @@
-=====
+================
 Sort Order Field
-=====
+================
 
 Sort Order Field provides a Django model field for controlling sort order.
 The field provides an admin widget which makes it easy to arrange related
