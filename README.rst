@@ -10,12 +10,12 @@ This is a very naive sort field, with no awareness of the model's ordering
 property and very specific admin support. However, it provides a simple and
 accessible user interface which could be useful for certain situations.
 
-.. figure:: docs/images/sort-buttons.gif
+.. figure:: https://raw.githubusercontent.com/dylanmccall/django-sort-order-field/1.0/docs/images/sort-buttons.gif
    :alt: screencast showing sort buttons in action
 
    Easy to use sort buttons.
 
-.. figure:: docs/images/keyboard-navigation.gif
+.. figure:: https://raw.githubusercontent.com/dylanmccall/django-sort-order-field/1.0/docs/images/keyboard-navigation.gif
    :alt: screencast showing sort buttons in action
 
    Accessible keyboard navigation and non-sequential sort indexes.
