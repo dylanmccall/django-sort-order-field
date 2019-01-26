@@ -45,7 +45,7 @@ Add a SortOrderField to one of your models::
 
     class PollOption(models.Model):
         class Meta:
-            ordering = ['sort_order']
+            ordering = ('sort_order',)
 
         poll = models.ForeignKey('Poll', on_delete=models.CASCADE)
         sort_order = SortOrderField(_("Sort"))
@@ -58,12 +58,12 @@ Add the sortable model to an inline model admin for your parent model::
 
     class PollOptionInline(admin.TabularInline):
         model = models.PollOption
-        fields = ('sort_order', 'label')
+        fields = ('sort_order', 'label',)
 
     @admin.register(models.Poll)
     class PollAdmin(admin.ModelAdmin):
         fields = ('question',)
-        inlines = [PollOptionInline]
+        inlines = (PollOptionInline,)
 
 The sort order field will be rendered as a text field with JavaScript
 enhancements. When the user enters a new sort order, the inline forms will be
