@@ -3,12 +3,13 @@ Sort Order Field
 ================
 
 Sort Order Field provides a Django model field for controlling sort order.
-The field provides an admin widget which makes it easy to arrange related
+The field includes an admin widget which makes it easy to arrange related
 models in an inline form.
 
-This is a very naive sort field, with no awareness of the model's ordering
-property and very specific admin support. However, it provides a simple and
-accessible user interface which could be useful for certain situations.
+At the moment, the admin widget assumes it is the only field which controls
+ordering for its model, and it has no awareness of the sort direction. This
+is less powerful than other sort field libraries, but its design may be
+useful for certain situations.
 
 .. figure:: https://raw.githubusercontent.com/dylanmccall/django-sort-order-field/1.0/docs/images/sort-buttons.gif
    :alt: screencast showing sort buttons in action
@@ -66,7 +67,7 @@ Add the sortable model to an inline model admin for your parent model::
         inlines = (PollOptionInline,)
 
 The sort order field will be rendered as a text field with JavaScript
-enhancements. When the user enters a new sort order, the inline forms will be
-reorganized according to that change. The sort order fields will also be bound
-by their initial values, in order to avoid conflicts if the same objects
-appear in different inlines.
+enhancements. When the user enters a new sort order value, the inline forms
+will be reorganized according to that value. The sort order fields will be
+bound by their initial values, which helps to avoid conflicts if the same
+objects appear in different inlines.
