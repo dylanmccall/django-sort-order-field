@@ -18,7 +18,7 @@ setup(
     long_description_content_type='text/x-rst',
     url='https://github.com/dylanmccall/django-sort-order-field',
     author='Dylan McCall',
-    author_email='dylan@dylanmccall.com',
+    author_email='dylan@dylanmccall.ca',
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
